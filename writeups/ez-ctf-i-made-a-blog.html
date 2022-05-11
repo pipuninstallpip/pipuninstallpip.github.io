@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>I made a blog writeup - EZ-CTF - pip uninstall pip</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, height=device-height"
+    />
+    <link rel="stylesheet" href="../index.css" />
+    <link rel="stylesheet" href="./writeup.css" />
+  </head>
+  <body>
+    <div id="content-container">
+			<nav class="navbar">
+        <a href="../">Home</a>
+        <br/>
+        <a href="https://ctftime.org/team/183045#writeup_list">Writeups</a>
+      </nav>
+      <div id="main-container">
+        <div id="header" role="heading" aria-level="1">
+          <h1>I made a blog (EZ-CTF) - Writeup</h1>
+        </div>
+
+        <main>
+          <p>
+            We're given the hint "robots will rule the world" - I immediately
+            get the idea to head to <code>/robots.txt</code> on the site. We see
+            a page called <code>flag.php</code>. Upon heading to it, it asks
+            "How do you filter your coffee?"
+          </p>
+          <p>
+            This took me some time to think about, but I eventually saw that the
+            CTF organizer had given a hint in Discord saying it's a local file
+            inclusion vulnerability. I searched for things like "lfi filter php"
+            and so on, and that's when I learned about something called
+            <code>php://filter</code>.
+          </p>
+          <p>
+            I wasn't sure how to proceed from here, so I went back to the
+            website. I realized that the site template was from PHPJabbers, so I
+            downloaded the template to see if I would find anything interested.
+            However, it was just a plain HTML template, and I didn't think it
+            would be relevant.
+          </p>
+          <p>
+            Then, mostly out of boredom, I clicked around the site and ended up
+            on
+            <code>http://ez.ctf.cafe:9999/blog-posts.php?file=blog1.html</code>.
+            I changed blog1.html to <code>../../../etc/passwd</code> and it
+            worked! This made me think back to filtering, and I decided to
+            filter <code>flag.php</code> into base64 like this:
+            <code
+              >http://ez.ctf.cafe:9999/blog-posts.php?file=php://filter/convert.base64-encode/resource=flag.php</code
+            >
+          </p>
+          <p>
+            We get the output of a base64 string containing this:
+            <code
+              >PD9waHAKCWVjaG8gJ0hvdyBkbyB5b3UgZmlsdGVyIHlvdXIgY29mZmVlPyc7ICAgIAoJLy8gRVotQ1RGe0xGSV8xU18zWn0KPz4K</code
+            >
+          </p>
+          <p>
+            Now, I go to cyberchef.org and enter the string and we get an output
+            containing the PHP file's contents, which includes a comment with
+            our flag:
+          </p>
+          <pre>
+&lt;?php
+  echo 'How do you filter your coffee?';    
+  // EZ-CTF{LFI_1S_3Z}
+?&gt;</pre>
+          <p>
+            This theoretically may have allowed remote code execution, as due to
+            the PHP version being outdated, a workaround existed that would
+            bypass the site preventing the loading of code from other websites.
+            However, I wasn't interested in trying to exploit this, and I feel
+            that it's unnecessary and certainly isn't the point of the
+            challenge.
+          </p>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
