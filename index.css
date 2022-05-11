@@ -1,0 +1,61 @@
+/* color scheme from https://coolors.co/0081af-00abe7-2dc7ff-ead2ac-eaba6b */
+
+:root {
+	--theme-color: #0081AF;
+	--mild-theme-color: #2DC7FF;
+	--contrasting-color: #EABA6B;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+	height: 100%;
+	font-size: 17px;
+}
+
+#content-container {
+	display: flex;
+	height: 100%;
+}
+
+.navbar {
+    background-color: var(--theme-color);
+    width: 15%;
+	padding: 1%;
+	user-select: none;
+}
+
+.navbar a {
+	color: var(--mild-theme-color);
+	overflow-wrap: anywhere; /* wrap text */
+}
+
+#main-container {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+main {
+	padding-left: 1%;
+}
+
+#header {
+	background-color: var(--mild-theme-color);
+	color: white;
+	padding: 1%;
+	width: 98%; /* due to padding-left and padding-right both being
+	1% (see above), this will result in 100% width 
+	*/
+	height: 10%;
+	user-select: none;
+}
+
+footer {
+	width: 100%;
+	text-align: center;
+	background: var(--contrasting-color);
+	color: darkslategray;
+}
